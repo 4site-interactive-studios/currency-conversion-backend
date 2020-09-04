@@ -11,4 +11,4 @@ The backend for cache API for PETA latino donation form
 
 ## Deployment
 
-It's going to be deployed in the AWS 
+It's going to be deployed in the AWS. Will update when the the deployment has been made
