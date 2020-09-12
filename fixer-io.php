@@ -1,7 +1,10 @@
 <?php
 
-//fixer.io
-// http://data.fixer.io/api/latest?access_key=bd86b13c4f91a685545925857ea5eeb6&format=1
+// Allow this resource to be accessible with APIs such as XMLHttpRequest
+// from any domain
+
+header('Access-Control-Allow-Origin: *');
+
 
 $endpoint = 'latest';
 $access_key = 'bd86b13c4f91a685545925857ea5eeb6';
@@ -10,7 +13,7 @@ $access_key = 'bd86b13c4f91a685545925857ea5eeb6';
 $cacheTimer = 86400;
 
 //File name for the cached conversion rates
-$cacheFileName = 'cache/cachedConverter.txt';
+$cacheFileName = 'cache/fixer-io.txt';
 
 //Check if the file name still exists
 
@@ -18,7 +21,6 @@ $cacheFileName = 'cache/cachedConverter.txt';
 if (!file_exists($cacheFileName) or (time() - filemtime($cacheFileName) > $cacheTimer)) {
     // Initialize CURL:
     $ch = curl_init('http://data.fixer.io/api/' . $endpoint . '?access_key=' . $access_key . '&symbols=USD,MXN,EUR,ARS,COP,CAD,CLP');
-    //curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
     // Gets the data. Increases the amount that the url has been called.
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -27,7 +29,6 @@ if (!file_exists($cacheFileName) or (time() - filemtime($cacheFileName) > $cache
 
     //Decode JSON response:
     $exchangeRates = json_decode($json, true);
-    //var_dump($json);
 
     //If the curl cannot get the API, we output for the console log
     if(!$exchangeRates){
@@ -38,19 +39,14 @@ if (!file_exists($cacheFileName) or (time() - filemtime($cacheFileName) > $cache
         $fileopen = fopen($cacheFileName, 'w');
         fwrite($fileopen, $json);
         fclose($fileopen);
-        $cachedFile = file_get_contents($cacheFileName);
         include($cacheFileName);
     }
     //Console log the false state of the Fixer.io
     else if($exchangeRates['success'] == false){
         echo $json;
     }
-
-    //$cachedFile = file_get_contents($cacheFileName);
 }
 //If it still exists or it's not expired, we get the file
 else {
-    $cachedFile = file_get_contents($cacheFileName);
     include($cacheFileName);
 }
-//include($cacheFileName);
