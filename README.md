@@ -12,3 +12,4 @@ The backend for cache API for PETA latino donation form
 ## Requirements
 
 - You need to have a writeable `/shared/` folder under your `DOCUMENT_ROOT` for this script to work.
+- Require personal access token from 4site in order to automatically create a Github issue
