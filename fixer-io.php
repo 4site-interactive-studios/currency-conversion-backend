@@ -21,7 +21,7 @@ function sendEmail($errorMsg)
     //Sends email with an error
 
     $to = 'gemini@peta.org';
-    $subject = 'APP-01';
+    $subject = 'APP-01 - Currency Conversion API Issue';
     $message = $errorMsg;
 
     mail($to, $subject, $message);
