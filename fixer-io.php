@@ -15,6 +15,43 @@ $cacheTimer = 86400;
 //File name for the cached conversion rates
 $cacheFileName = 'cache/fixer-io.txt';
 
+
+function sendEmail($errorMsg)
+{
+    //Sends email with an error
+
+    $to = 'gemini@peta.org';
+    $subject = 'APP-01';
+    $message = $errorMsg;
+
+    mail($to, $subject, $message);
+}
+
+function createIssues($errorMsg)
+{
+    //Requires Github personal access token with the repo scopes all checked
+    //Requires the personal access token from 4site
+
+    $errorTitle = 'PETA conversion ticket';
+    $github_personal_access_token = '';
+
+    $headers = array("Authorization: token $github_personal_access_token", 'User-Agent: Email-To-Issue-Bot');
+
+    $json = array();
+    $json['title'] = $errorTitle;
+    $json['body'] = $errorMsg;
+
+    // Create the new GitHub issue
+    $ch = curl_init("https://api.github.com/repos/4site-interactive-studios/currency-conversion-backend/issues");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($json));
+    curl_exec($ch);
+    curl_close($ch);
+}
+
 //Check if the file name still exists
 
 //If the file does not exists or it has been expired, we create a new one
@@ -32,7 +69,10 @@ if (!file_exists($cacheFileName) or (time() - filemtime($cacheFileName) > $cache
 
     //If the curl cannot get the API, we output for the console log
     if(!$exchangeRates){
-        echo 'https://fixer.io/ API is unavailable. Please check the API.';
+        $errorMsg = 'https://fixer.io/ API is unavailable. Please check the API.';
+        createIssues($errorMsg);
+        sendEmail($errorMsg);
+        echo $errorMsg;
     }
     //If there is no request error in the curl or the status of the fixer.io is a OK
     else if($exchangeRates['success'] == true){
@@ -43,6 +83,8 @@ if (!file_exists($cacheFileName) or (time() - filemtime($cacheFileName) > $cache
     }
     //Console log the false state of the Fixer.io
     else if($exchangeRates['success'] == false){
+        createIssues($json);
+        sendEmail($json);
         echo $json;
     }
 }
