@@ -32,13 +32,13 @@ function createIssues($errorMsg)
     //Requires Github personal access token with the repo scopes all checked
     //Requires the personal access token from 4site
 
-    $errorTitle = 'PETA conversion ticket';
+    $issueTitle = 'PETA conversion ticket';
     $github_personal_access_token = '';
 
     $headers = array("Authorization: token $github_personal_access_token", 'User-Agent: Email-To-Issue-Bot');
 
     $json = array();
-    $json['title'] = $errorTitle;
+    $json['title'] = $issueTitle;
     $json['body'] = $errorMsg;
 
     // Create the new GitHub issue
