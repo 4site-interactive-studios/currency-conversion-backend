@@ -13,7 +13,7 @@ $access_key = 'bd86b13c4f91a685545925857ea5eeb6';
 $cacheTimer = 86400;
 
 //File name for the cached conversion rates
-$cacheFileName = 'cache/fixer-io.txt';
+$cacheFileName = $_SERVER['DOCUMENT_ROOT'].'/shared/fixer-io.txt';
 
 
 function sendEmail($errorMsg)
