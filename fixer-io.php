@@ -14,6 +14,7 @@ $cacheTimer = 86400;
 
 //File name for the cached conversion rates
 $cacheFileName = $_SERVER['DOCUMENT_ROOT'].'/shared/fixer-io.txt';
+$cacheErrorFile = $_SERVER['DOCUMENT_ROOT'].'shared/errorLog.txt';
 
 
 function sendEmail($errorMsg)
@@ -53,6 +54,20 @@ function createIssues($errorMsg)
 }
 
 //Check if the file name still exists
+function errorCache($cacheErrorFile, $cacheTimer, $errorMsg){
+
+    //Create the error log if the it does not exist and sends the issue and email
+    if (!file_exists($cacheErrorFile) or (time() - filemtime($cacheErrorFile) > $cacheTimer)){
+        $fileopen = fopen($cacheErrorFile, 'w');
+        fwrite($fileopen, $errorMsg);
+        fclose($fileopen);
+        $cachedFile = file_get_contents($cacheErrorFile);
+
+        createIssues($errorMsg);
+        sendEmail($errorMsg);
+
+    }
+}
 
 //If the file does not exists or it has been expired, we create a new one
 if (!file_exists($cacheFileName) or (time() - filemtime($cacheFileName) > $cacheTimer)) {
@@ -70,8 +85,7 @@ if (!file_exists($cacheFileName) or (time() - filemtime($cacheFileName) > $cache
     //If the curl cannot get the API, we output for the console log
     if(!$exchangeRates){
         $errorMsg = 'https://fixer.io/ API is unavailable. Please check the API.';
-        createIssues($errorMsg);
-        sendEmail($errorMsg);
+        errorCache($cacheErrorFile,$cacheTimer,$errorMsg);
         echo $errorMsg;
     }
     //If there is no request error in the curl or the status of the fixer.io is a OK
@@ -80,11 +94,11 @@ if (!file_exists($cacheFileName) or (time() - filemtime($cacheFileName) > $cache
         fwrite($fileopen, $json);
         fclose($fileopen);
         include($cacheFileName);
+        unlink($cacheErrorFile);
     }
     //Console log the false state of the Fixer.io
     else if($exchangeRates['success'] == false){
-        createIssues($json);
-        sendEmail($json);
+        errorCache($cacheErrorFile,$cacheTimer,$json);
         echo $json;
     }
 }
