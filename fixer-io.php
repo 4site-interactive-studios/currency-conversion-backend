@@ -42,7 +42,8 @@ function createIssues($errorMsg)
     $json['body'] = $errorMsg;
 
     // Create the new GitHub issue
-    $ch = curl_init("https://api.github.com/repos/4site-interactive-studios/currency-conversion-backend/issues");
+    // Add repo location after the URL
+    $ch = curl_init("https://api.github.com/");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
