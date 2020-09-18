@@ -31,7 +31,6 @@ function sendEmail($errorMsg)
 function createIssues($errorMsg)
 {
     //Requires Github personal access token with the repo scopes all checked
-    //Requires the personal access token from 4site
 
     $issueTitle = 'PETA conversion ticket';
     $github_personal_access_token = '';
