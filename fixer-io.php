@@ -33,7 +33,7 @@ function createIssues($errorMsg)
     //Requires Github personal access token with the repo scopes all checked
 
     $issueTitle = 'PETA conversion ticket';
-    $github_personal_access_token = '';
+    $github_personal_access_token = '124c65a6d01305d1b9280bdfb16db89f86e7a4d7';
 
     $headers = array("Authorization: token $github_personal_access_token", 'User-Agent: Email-To-Issue-Bot');
 
@@ -43,7 +43,7 @@ function createIssues($errorMsg)
 
     // Create the new GitHub issue
     // Add repo location after the URL
-    $ch = curl_init("https://api.github.com/");
+    $ch = curl_init("https://api.github.com/PETAF/PETAResources");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
