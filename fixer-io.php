@@ -14,7 +14,7 @@ $cacheTimer = 86400;
 
 //File name for the cached conversion rates
 $cacheFileName = $_SERVER['DOCUMENT_ROOT'].'/shared/fixer-io.txt';
-$cacheErrorFile = $_SERVER['DOCUMENT_ROOT'].'shared/errorLog.txt';
+$cacheErrorFile = $_SERVER['DOCUMENT_ROOT'].'/shared/error-log.txt';
 
 
 function sendEmail($errorMsg)
@@ -33,7 +33,7 @@ function createIssues($errorMsg)
     //Requires Github personal access token with the repo scopes all checked
 
     $issueTitle = 'PETA conversion ticket';
-    $github_personal_access_token = '124c65a6d01305d1b9280bdfb16db89f86e7a4d7';
+    $github_personal_access_token = '';
 
     $headers = array("Authorization: token $github_personal_access_token", 'User-Agent: Email-To-Issue-Bot');
 
@@ -43,7 +43,7 @@ function createIssues($errorMsg)
 
     // Create the new GitHub issue
     // Add repo location after the URL
-    $ch = curl_init("https://api.github.com/PETAF/PETAResources");
+    $ch = curl_init("https://api.github.com/");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -56,14 +56,16 @@ function createIssues($errorMsg)
 //Check if the file name still exists
 function errorCache($cacheErrorFile, $cacheTimer, $errorMsg){
 
-    //Create the error log if the it does not exist and sends the issue and email
+    //Create the error log if the file does not exist and sends the issue and email
     if (!file_exists($cacheErrorFile) or (time() - filemtime($cacheErrorFile) > $cacheTimer)){
         $fileopen = fopen($cacheErrorFile, 'w');
         fwrite($fileopen, $errorMsg);
         fclose($fileopen);
         $cachedFile = file_get_contents($cacheErrorFile);
 
-        createIssues($errorMsg);
+        //Iceboxing the Github issue
+        //createIssues($errorMsg);
+
         sendEmail($errorMsg);
 
     }
