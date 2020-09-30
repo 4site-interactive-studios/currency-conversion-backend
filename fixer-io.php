@@ -16,61 +16,6 @@ $cacheTimer = 86400;
 $cacheFileName = $_SERVER['DOCUMENT_ROOT'].'/shared/fixer-io.txt';
 $cacheErrorFile = $_SERVER['DOCUMENT_ROOT'].'/shared/error-log.txt';
 
-
-function sendEmail($errorMsg)
-{
-    //Sends email with an error
-
-    $to = 'gemini@peta.org';
-    $subject = 'APP-01 - Currency Conversion API Issue';
-    $message = $errorMsg;
-
-    mail($to, $subject, $message);
-}
-
-function createIssues($errorMsg)
-{
-    //Requires Github personal access token with the repo scopes all checked
-
-    $issueTitle = 'PETA conversion ticket';
-    $github_personal_access_token = '';
-
-    $headers = array("Authorization: token $github_personal_access_token", 'User-Agent: Email-To-Issue-Bot');
-
-    $json = array();
-    $json['title'] = $issueTitle;
-    $json['body'] = $errorMsg;
-
-    // Create the new GitHub issue
-    // Add repo location after the URL
-    $ch = curl_init("https://api.github.com/");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($json));
-    curl_exec($ch);
-    curl_close($ch);
-}
-
-//Check if the file name still exists
-function errorCache($cacheErrorFile, $cacheTimer, $errorMsg){
-
-    //Create the error log if the file does not exist and sends the issue and email
-    if (!file_exists($cacheErrorFile) or (time() - filemtime($cacheErrorFile) > $cacheTimer)){
-        $fileopen = fopen($cacheErrorFile, 'w');
-        fwrite($fileopen, $errorMsg);
-        fclose($fileopen);
-        $cachedFile = file_get_contents($cacheErrorFile);
-
-        //Iceboxing the Github issue
-        //createIssues($errorMsg);
-
-        sendEmail($errorMsg);
-
-    }
-}
-
 //If the file does not exists or it has been expired, we create a new one
 if (!file_exists($cacheFileName) or (time() - filemtime($cacheFileName) > $cacheTimer)) {
     // Initialize CURL:
@@ -84,24 +29,48 @@ if (!file_exists($cacheFileName) or (time() - filemtime($cacheFileName) > $cache
     //Decode JSON response:
     $exchangeRates = json_decode($json, true);
 
-    //If the curl cannot get the API, we output for the console log
-    if(!$exchangeRates){
-        $errorMsg = 'https://fixer.io/ API is unavailable. Please check the API.';
-        errorCache($cacheErrorFile,$cacheTimer,$errorMsg);
-        echo $errorMsg;
+    //If the curl cannot get the API, use the old file
+    if (!$exchangeRates) {
+        //If the file exists and the last modified has been 1 day, set the http to 500 to alert uptime monitor
+        if (file_exists($cacheFileName)){
+            $cachedFile = file_get_contents($cacheFileName);
+            include($cacheFileName);
+
+            if((time() - filemtime($cacheFileName) > $cacheTimer)){
+                //sending error
+                http_response_code(500);
+            }
+            else {
+                http_response_code(200);
+            }
+        }
+
     }
     //If there is no request error in the curl or the status of the fixer.io is a OK
-    else if($exchangeRates['success'] == true){
+    else if ($exchangeRates['success'] == true) {
         $fileopen = fopen($cacheFileName, 'w');
         fwrite($fileopen, $json);
         fclose($fileopen);
+        $cachedFile = file_get_contents($cacheFileName);
         include($cacheFileName);
-        unlink($cacheErrorFile);
     }
+
     //Console log the false state of the Fixer.io
-    else if($exchangeRates['success'] == false){
-        errorCache($cacheErrorFile,$cacheTimer,$json);
-        echo $json;
+    else if ($exchangeRates['success'] == false) {
+
+        //If the file exists and the last modified has been 1 day, set the http to 500 to alert uptime monitor
+        if (file_exists($cacheFileName)){
+            $cachedFile = file_get_contents($cacheFileName);
+            include($cacheFileName);
+
+            if((time() - filemtime($cacheFileName) > $cacheTimer)){
+                //sending error
+                http_response_code(500);
+            }
+            else {
+                http_response_code(200);
+            }
+        }
     }
 }
 //If it still exists or it's not expired, we get the file
