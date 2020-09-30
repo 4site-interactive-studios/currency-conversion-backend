@@ -14,12 +14,11 @@ $cacheTimer = 86400;
 
 //File name for the cached conversion rates
 $cacheFileName = $_SERVER['DOCUMENT_ROOT'].'/shared/fixer-io.txt';
-$cacheErrorFile = $_SERVER['DOCUMENT_ROOT'].'/shared/error-log.txt';
 
 //If the file does not exists or it has been expired, we create a new one
 if (!file_exists($cacheFileName) or (time() - filemtime($cacheFileName) > $cacheTimer)) {
     // Initialize CURL:
-    $ch = curl_init('http://data.fixer.io/api/' . $endpoint . '?access_key=' . $access_key . '&symbols=USD,MXN,EUR,ARS,COP,CAD,CLP');
+    $ch = curl_init('http://sdata.fixer.io/api/' . $endpoint . '?access_key=' . $access_key . '&symbols=USD,MXN,EUR,ARS,COP,CAD,CLP');
 
     // Gets the data. Increases the amount that the url has been called.
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -31,20 +30,11 @@ if (!file_exists($cacheFileName) or (time() - filemtime($cacheFileName) > $cache
 
     //If the curl cannot get the API, use the old file
     if (!$exchangeRates) {
-        //If the file exists and the last modified has been 1 day, set the http to 500 to alert uptime monitor
+        //If the file exists use the successful cache file
         if (file_exists($cacheFileName)){
             $cachedFile = file_get_contents($cacheFileName);
             include($cacheFileName);
-
-            if((time() - filemtime($cacheFileName) > $cacheTimer)){
-                //sending error
-                http_response_code(500);
-            }
-            else {
-                http_response_code(200);
-            }
         }
-
     }
     //If there is no request error in the curl or the status of the fixer.io is a OK
     else if ($exchangeRates['success'] == true) {
@@ -54,22 +44,12 @@ if (!file_exists($cacheFileName) or (time() - filemtime($cacheFileName) > $cache
         $cachedFile = file_get_contents($cacheFileName);
         include($cacheFileName);
     }
-
     //Console log the false state of the Fixer.io
     else if ($exchangeRates['success'] == false) {
-
-        //If the file exists and the last modified has been 1 day, set the http to 500 to alert uptime monitor
+        //If the file exists use the successful cache file
         if (file_exists($cacheFileName)){
             $cachedFile = file_get_contents($cacheFileName);
             include($cacheFileName);
-
-            if((time() - filemtime($cacheFileName) > $cacheTimer)){
-                //sending error
-                http_response_code(500);
-            }
-            else {
-                http_response_code(200);
-            }
         }
     }
 }
