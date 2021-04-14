@@ -18,7 +18,7 @@ $cacheFileName = $_SERVER['DOCUMENT_ROOT'].'/shared/fixer-io.txt';
 //If the file does not exists or it has been expired, we create a new one
 if (!file_exists($cacheFileName) or (time() - filemtime($cacheFileName) > $cacheTimer)) {
     // Initialize CURL:
-    $ch = curl_init('http://data.fixer.io/api/' . $endpoint . '?access_key=' . $access_key . '&symbols=USD,MXN,EUR,ARS,COP,CAD,CLP');
+    $ch = curl_init('http://data.fixer.io/api/' . $endpoint . '?access_key=' . $access_key . '&symbols=USD,MXN,EUR,ARS,COP,CAD,CLP,GBP');
 
     // Gets the data. Increases the amount that the url has been called.
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
